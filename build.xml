@@ -1,0 +1,77 @@
+<project name="ComputerAlgebraProject" default="dist" basedir=".">
+
+  <!-- set global properties for this build -->
+  <property name="src" value="src"/>
+  <property name="java.src" value="${src}/algebra"/>
+  <property name="build" value="build"/>
+  <property name="dist"  value="dist"/>
+  <property name="reports.tests"  value="test.output"/>
+
+  <target name="init">
+    <!-- Create the time stamp -->
+    <tstamp/>
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${build}"/>
+  </target>
+
+  <target name="generate" depends="init">
+  <antlr target="${java.src}/parser/lexer.g"/>
+  <antlr target="${java.src}/parser/parser.g"/>
+  </target>
+
+  <target name="compile" depends="generate">
+    <!-- Compile the java code from ${src} into ${build} -->
+    <javac srcdir="${java.src}" destdir="${build}" debug="on">
+      <include name="*"/>
+      <include name="factorization/**"/>
+      <include name="matrix/**"/>
+      <include name="parser/**"/>
+      <include name="util/**"/>
+    </javac>
+    <javac srcdir="${java.src}" destdir="${build}" debug="on">
+      <exclude name="logic/**"/>
+      <exclude name="module/**"/>
+      <exclude name="factorization/**"/>
+      <exclude name="matrix/**"/>
+      <exclude name="parser/**"/>
+      <exclude name="util/**"/>
+      <exclude name="*"/>
+    </javac>
+  </target>
+
+  <target name="dist" depends="compile">
+    <!-- Create the distribution directory -->
+    <mkdir dir="${dist}/lib"/>
+
+    <!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
+    <jar jarfile="${dist}/lib/ca.jar" basedir="${build}"/>
+    <path id="application" location="${dist}/lib/ca.jar"/>
+  </target>
+
+  <target name="test" depends="dist">
+  <!-- Create the test output directory -->
+    <mkdir dir="${reports.tests}"/>
+
+  <!-- Do the junit unit tests -->
+  <junit printsummary="yes">
+  <classpath>
+    <pathelement path="${classpath}"/>
+    <path refid="application"/>
+  </classpath>
+
+  <formatter type="plain" />
+  <batchtest fork="yes" todir="${reports.tests}">
+    <fileset dir="${src}" includes="**/*Test.java"/>
+  </batchtest>
+
+  </junit>
+  </target>
+
+  <target name="clean">
+    <!-- Delete the ${build} and ${dist} directory trees -->
+    <delete dir="${build}"/>
+    <delete dir="${dist}"/>
+    <delete dir="${reports.tests}"/>
+  </target>
+</project>
+
